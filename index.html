@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style> /* set the CSS */
+
+body { font: 12px Arial;}
+
+path {
+    stroke: steelblue;
+    stroke-width: 2;
+    fill: none;
+}
+
+.axis path,
+.axis line {
+    fill: none;
+    stroke: grey;
+    stroke-width: 1;
+    shape-rendering: crispEdges;
+}
+.tooltip {
+  position: absolute;
+  width: 200px;
+  height: 28px;
+  pointer-events: none;
+}
+svg {
+  font: 10px sans-serif;
+  padding: 10px;
+}
+
+.axis,
+.frame {
+  shape-rendering: crispEdges;
+}
+
+
+.cell text {
+  font-weight: bold;
+  text-transform: capitalize;
+}
+
+.frame {
+  fill: none;
+  stroke: #aaa;
+}
+
+circle {
+  fill-opacity: .7;
+}
+
+</style>
+<body style="background-image:url(https://www.sas.com/en_us/insights/big-data/data-visualization/_jcr_content/par/styledcontainer_afc8/image.img.jpg/1534433496976.jpg)">
+
+<!-- load the d3.js library -->
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<!-- <script>
+
+// Set the dimensions of the canvas / graph
+var margin = {top: 30, right: 20, bottom: 30, left: 50},
+    width = 600 - margin.left - margin.right,
+    height = 270 - margin.top - margin.bottom;
+
+// Parse the date / time
+var parseDate = d3.time.format("%d-%b-%y").parse;
+//var parseDate = d3.time.format("%y-%b-%d").parse;
+//var parseDate = d3.time.format("%Y-%m-%d").parse;
+
+// Set the ranges
+var x = d3.time.scale().range([0, width]);
+var y = d3.scale.linear().range([height, 0]);
+
+// Define the axes
+var xAxis = d3.svg.axis().scale(x)
+    .orient("bottom").ticks(5);
+
+var yAxis = d3.svg.axis().scale(y)
+    .orient("left").ticks(5);
+
+// Define the line
+var valueline = d3.svg.line()
+    .x(function(d) { return x(d.date); })
+    .y(function(d) { return y(d.close); });
+
+var valueline2 = d3.svg.line()
+  .x(function(d){ return x(d.date);})
+  .y(function(d){ return y(d.open);});
+
+// Adds the svg canvas
+var svg = d3.select("body")
+    .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+        .attr("transform",
+              "translate(" + margin.left + "," + margin.top + ")");
+
+// Get the data
+
+function drawdata(data){
+  //console.log(data)
+  data.forEach(function(d) {
+      d.date = parseDate(d.date);
+      d.close = +d.close;
+  });
+
+  // Scale the range of the data
+  x.domain(d3.extent(data, function(d) { return d.date; }));
+  y.domain([0, d3.max(data, function(d) { return d.close; })]);
+
+  // Add the valueline path.
+  svg.append("path")
+      .attr("class", "line")
+      .attr("d", valueline(data));
+
+  // Add the X Axis
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis);
+
+  // Add the Y Axis
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis);
+}
+
+
+// drawdata(data)
+
+// ** Update data section (Called from the onclick)
+function updateData() {
+
+    // Get the data again
+      // Request the "" page and send some additional data along (while still ignoring the return results).
+    // $.post("", {'data': 'received'}, function(data_infunc){
+      // console.log({data_infunc})
+      $.post("", {'data': 'received'}, function(data_infunc){
+      data2 = JSON.parse(data_infunc.chart_data)
+      console.log(data2);
+      data2.forEach(function(d) {
+      d.date = parseDate(d.date);
+      d.close = +d.close;
+      });
+
+      //console.log(data2);
+      // Scale the range of the data again
+    	x.domain(d3.extent(data2, function(d) { return d.date; }));
+	    y.domain([0, d3.max(data2, function(d) { return d.close; })]);
+
+    // Select the section we want to apply our changes to
+    var svg = d3.select("body").transition();
+    //
+    // // Make the changes
+        svg.select(".line")   // change the line
+            .duration(750)
+            .attr("d", valueline(data2));
+        svg.select(".x.axis") // change the x axis
+            .duration(750)
+            .call(xAxis);
+        svg.select(".y.axis") // change the y axis
+            .duration(750)
+            .call(yAxis);
+    })
+
+
+}
+
+</script> -->
+<hr>
+<script>
+
+function plot(rawdata) {
+    d3.select('#screeplot').remove();
+    d3.select('#chart').remove();
+    var margin = {top: 30, right: 20, bottom: 30, left: 50},
+    width = 700 - margin.left - margin.right,
+    height = 470 - margin.top - margin.bottom;
+
+
+// Set the ranges
+var x = d3.scaleLinear().range([0, width]);
+var y = d3.scaleLinear().range([height, 0]);
+
+// Define the axes
+var xAxis = d3.axisBottom().scale(x)
+    .ticks(5);
+
+var yAxis = d3.axisLeft().scale(y)
+    .ticks(5);
+
+// Define the line
+var valueline = d3.line()
+    .x(function(d) {  return x(d.x); })
+    .y(function(d) { return y(d.y); });
+// Adds the svg canvas
+var svg = d3.select("body")
+    .append("svg")
+    .attr('id','screeplot')
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+        .attr("transform", 
+              "translate(" + margin.left + "," + margin.top + ")");
+var data = JSON.parse(rawdata);
+array=[]
+console.log(data)
+for(var i=0; i< data.length;i++){
+        obj = {}
+        obj.x= i;
+        obj.y = data[i];
+        array.push(obj);
+        
+    }
+data=array
+console.log(data)
+var color = d3.scaleOrdinal(d3.schemeCategory10);
+var tooltip = d3.select("body").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
+    // Scale the range of the data
+    x.domain(d3.extent(data, function(d) { console.log(d); return d.x; }));
+    y.domain([0, d3.max(data, function(d) { return d.y; })]);
+    var xValue = function(d) { return d.x;}
+    var yValue = function(d) { return d.y;}
+    // Add the valueline path.
+    svg.append("path")
+        .attr("class", "line")
+        .attr("d", valueline(data));
+
+    // Add the scatterplot
+    svg.selectAll("dot")
+        .data(data)
+      .enter().append("circle")
+        .attr("r", 3.5)
+        .attr("cx",function(d) {  
+             return x(d.x); 
+        })
+        .attr("cy", function(d) { return y(d.y); })
+        .attr("fill", function(d, i){if(i==2){return color("red")}else{ color("black")}})
+       // .style("fill", "black")
+
+    //     svg.selectAll("dot")
+    //     .data(data)
+    //   .enter().append("circle")
+    //     .attr("r", 3.5)
+    //     .attr("cx",)
+    //     .attr("cy", function(d) { return y(d.y); })
+    //     .style("fill", "red")
+
+
+      
+        .on("mouseover", function(d) {
+          tooltip.transition()
+               .duration(200)
+               .style("opacity", .9);
+          tooltip.html(yValue(d)+ "<br/> " + "("+xValue(d) +")"
+	        )
+               .style("left", (d3.event.pageX + 5) + "px");
+               
+      })
+      .on("mouseout", function(d) {
+          tooltip.transition()
+               .duration(500)
+               .style("opacity", 0);
+      });
+
+    // Add the X Axis
+    svg.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(xAxis);
+
+    // Add the Y Axis
+    svg.append("g")
+        .attr("class", "y axis")
+        .call(yAxis);
+        svg.append("text")
+            .attr("class", "axis_label")
+            .attr("text-anchor", "middle")
+            .attr("transform", "translate("+ (-30) +","+(height/3)+")rotate(-90)")
+            .text("Eigen values");
+
+    svg.append("text")
+        .attr("class", "axis_label")
+        .attr("text-anchor", "middle")
+        .attr("transform", "translate("+ (width/3) +","+(height+30)+")")
+        .text("Intrinsic Dimensionality");
+
+}
+
+
+
+
+function plot1(rawdata) {
+    d3.select('#screeplot').remove();
+    d3.select('#chart').remove();
+    var margin = {top: 30, right: 20, bottom: 30, left: 50},
+    width = 700 - margin.left - margin.right,
+    height = 470 - margin.top - margin.bottom;
+
+
+// Set the ranges
+var x = d3.scaleLinear().range([0, width]);
+var y = d3.scaleLinear().range([height, 0]);
+
+// Define the axes
+var xAxis = d3.axisBottom().scale(x)
+    .ticks(5);
+
+var yAxis = d3.axisLeft().scale(y)
+    .ticks(5);
+
+// Define the line
+var valueline = d3.line()
+    .x(function(d) { return x(d.x); })
+    .y(function(d) { return y(d.y); });
+    
+// Adds the svg canvas
+var svg = d3.select("body")
+    .append("svg")
+    .attr('id','screeplot')
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+        .attr("transform", 
+              "translate(" + margin.left + "," + margin.top + ")");
+var data = JSON.parse(rawdata);
+array=[]
+console.log(data[0].length)
+for(var i=0; i< data[0].length;i++){
+        obj = {}
+        obj.x= i;
+        obj.xname = data[0][data[1][i]];
+        obj.y = data[2][i];
+        array.push(obj);
+        
+    }
+data=array
+console.log(data)
+var tooltip = d3.select("body").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
+    // Scale the range of the data
+    x.domain(d3.extent(data, function(d) { console.log(d); return d.x; }));
+    y.domain([0, d3.max(data, function(d) { return d.y; })]);
+    var xValue = function(d) { return d.xname;}
+    var yValue = function(d) { return d.y;}
+    // Add the valueline path.
+    svg.append("path")
+        .attr("class", "line")
+        .attr("d", valueline(data));
+
+    // Add the scatterplot
+    svg.selectAll("dot")
+        .data(data)
+      .enter().append("circle")
+        .attr("r", 3.5)
+        .attr("cx", function(d) { return x(d.x); })
+        .attr("cy", function(d) { return y(d.y); })
+        .on("mouseover", function(d) {
+          tooltip.transition()
+               .duration(200)
+               .style("opacity", .9);
+          tooltip.html(yValue(d)+ "<br/> (" + xValue(d) 
+	        +  ")")
+               .style("left", (d3.event.pageX + 5) + "px");
+               
+      })
+      .on("mouseout", function(d) {
+          tooltip.transition()
+               .duration(500)
+               .style("opacity", 0);
+      });
+    // Add the X Axis
+    svg.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(xAxis);
+
+    // Add the Y Axis
+    svg.append("g")
+        .attr("class", "y axis")
+        .call(yAxis);
+        svg.append("text")
+            .attr("class", "axis_label")
+            .attr("text-anchor", "middle")
+            .attr("transform", "translate("+ (-30) +","+(height/3)+")rotate(-90)")
+            .text("squared loading Values");
+
+    svg.append("text")
+        .attr("class", "axis_label")
+        .attr("text-anchor", "middle")
+        .attr("transform", "translate("+ (width/3) +","+(height+30)+")")
+        .text("PCA attributes");
+
+}
+
+function plot2(rawdata) {
+    d3.select('#screeplot').remove();
+    d3.select('#chart').remove();//clearing d3 space
+    var data = JSON.parse(rawdata);//converting raw data into json
+
+    var margin = {top: 20, right: 20, bottom: 30, left: 40};
+    var width = 960 - margin.left - margin.right;
+    var height = 500 - margin.top - margin.bottom;
+    var width = 960,
+    size = 230,
+    padding = 20;
+    var array = [];
+//  To get column names of most weighted attributes/columns
+pca_attr = Object.keys(data);
+    for(var i=0; i< Object.keys(data[0]).length;i++){
+        obj = {}
+        obj.x = data[0][i];
+        obj.y = data[1][i];
+        array.push(obj);  
+    }
+    data = array;
+    console.log(data)
+
+var color = d3.scaleOrdinal(d3.schemeCategory10);
+    var xValue = function(d) { return d.x;};//returns the value to encode for a given data object
+    var xScale = d3.scaleLinear().range([0, width]);//for pixel position
+    var  xMap = function(d) { return xScale(xValue(d));}; //map data->display
+    var xAxis = d3.axisBottom().scale(xScale).ticks(6);//.orient("bottom");
+
+    var yValue = function(d) { return d.y;};
+    var yScale = d3.scaleLinear().range([height, 0]);
+    var yMap = function(d) { return yScale(yValue(d));};
+    var yAxis = d3.axisLeft().scale(yScale).ticks(7)//.orient("left");
+
+    // var color = d3.scale.category10();
+    var svg = d3.select("body").append("svg")
+        .attr('id', 'chart')
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    xScale.domain([d3.min(data, xValue)-1, d3.max(data, xValue)+1]);
+    yScale.domain([d3.min(data, yValue)-1, d3.max(data, yValue)+1]);
+
+    svg.append("g")
+          .attr("transform", "translate(0," + height + ")")
+          .attr("class", "x_axis")
+          .call(xAxis)
+        .append("text")
+          .attr("class", "label")
+          .attr("y", -6)
+          .attr("x", width)
+          .text("Component 1")
+          .style("text-anchor", "end");
+
+    svg.append("g")
+          .attr("class", "y_axis")
+          .call(yAxis)
+        .append("text")
+          .attr("class", "label")
+          .attr("y", 6)
+          .attr("transform", "rotate(-90)")
+          .attr("dy", ".71em")
+          .text("Component 2")
+          .style("text-anchor", "end");
+   
+
+    svg.selectAll(".dot")
+          .data(data)
+          .enter().append("circle")
+          .attr("class", "dot")
+          .style("fill", "black")
+          .attr("cx", xMap)
+          .attr("r", 3.5)
+          .attr("cy", yMap)
+}
+
+//refered this implementation from internet-blocks site
+function scattrplot(rawdata){
+    d3.select('#screeplot').remove();
+    d3.select('#chart').remove();//clearing d3.area
+    var data = JSON.parse(rawdata);//json parsing data
+    var width = 960,
+    size = 230,
+    padding = 20;
+
+var x = d3.scaleLinear()
+    .range([padding / 2, size - padding / 2]);
+
+var y = d3.scaleLinear()
+    .range([size - padding / 2, padding / 2]);
+
+var xAxis = d3.axisBottom()
+    .scale(x)
+    .ticks(6);
+
+var yAxis = d3.axisLeft()
+    .scale(y)
+    .ticks(6);
+
+var color = d3.scaleOrdinal(d3.schemeCategory10);
+
+    var pca_attr = Object.keys(data);//get the keys
+    console.log(pca_attr)//["g_restrictions_sale_real_property", "c_gov_enterprises", "b_impartial_courts", "clusterid"]
+
+    var domainByFtr = {},
+      pca_attr = d3.keys(data).filter(function(d) { console.log(d); return d !== "clusterid"; }),
+      n = pca_attr.length;
+    xAxis.tickSize(size * n);
+    yAxis.tickSize(-size * n);
+    pca_attr.forEach(function(pcaattr) { console.log(d3.values(data[pcaattr]))
+        domainByFtr[pcaattr] =d3.extent( d3.values(data[pcaattr]));     
+    });
+    var svg = d3.select("body").append("svg")
+        .attr('id', 'chart')
+        .attr("width", size * n + padding)
+        .attr("height", size * n + padding)
+        .append("g")
+        .attr("transform", "translate(" + padding + "," + padding / 2 + ")");
+
+    svg.selectAll(".x.axis")
+        .data(pca_attr)
+        .enter().append("g")
+        .attr("class", "x axis")
+        .attr("transform", function(d, i) { return "translate(" + (n - i - 1) * size + ",0)"; })
+        .each(function(d) { x.domain(domainByFtr[d]); d3.select(this).call(xAxis); });
+
+    svg.selectAll(".y.axis")
+        .data(pca_attr)
+        .enter().append("g")
+        .attr("class", "y axis")
+        .attr("transform", function(d, i) { return "translate(0," + i * size + ")"; })
+        .each(function(d) { y.domain(domainByFtr[d]); d3.select(this).call(yAxis); });
+    var cell = svg.selectAll(".cell")
+        .data(cross(pca_attr, pca_attr))
+        .enter().append("g")
+        .attr("class", "cell")
+        .attr("transform", function(d) { return "translate(" + (n - d.i - 1) * size + "," + d.j * size + ")"; })
+        .each(plot);
+    cell.filter(function(d) {  return d.i === d.j; }).append("text")
+        .attr("x", padding)
+        .attr("y", padding)
+        .attr("dy", ".71em")
+        .text(function(d) { return d.x; });
+    function plot(p) {
+        console.log(p.x,p.y)
+          var cell = d3.select(this);
+          x.domain(domainByFtr[String(p.x)]);
+          y.domain(domainByFtr[String(p.y)]);
+          cell.append("rect")
+              .attr("class", "frame")
+              .attr("x", padding / 2)
+              .attr("y", padding / 2)
+              .attr("width", size - padding)
+              .attr("height", size - padding);
+//all i want x of first and y of second ,make data to pass to make circles
+data_x_coordinate=d3.values(data[String(p.x)]);
+newobject=[]
+//using values of first and iterating to add item of second
+data_x_coordinate.forEach(function(item,index){
+    // console.log(p)
+    object={}
+    object["first_coordinate"]=item
+    object["second_coordinate"]=d3.values(data[String(p.y)])[index]
+    newobject.push(object);
+});
+// console.log(newobject)
+          cell.selectAll("circle")
+              .data(newobject)
+              .enter().append("circle")
+              .attr("cx", function(d) { return x(d.first_coordinate); })
+              .attr("cy", function(d) { return y(d.second_coordinate); })
+              .attr("r", 4)
+              .style("fill", function(d) { return color("blue");  });
+    }
+}
+function cross(a, b) {
+    var c = [], n = a.length, m = b.length, i, j;
+    for (i = -1; ++i < n;) for (j = -1; ++j < m;) c.push({x: a[i], i: i, y: b[j], j: j});
+    return c;
+}
+
+
+function callme(a){
+    $.ajax({
+	  type: 'GET',
+	  url: a,
+      contentType: 'application/json; charset=utf-8',
+	  success: function(result) {
+        plot(result)
+	  },
+	  error: function(result) {
+		$("#error").html(result);
+	  }
+	});
+}
+function callme1(a){
+    $.ajax({
+	  type: 'GET',
+	  url: a,
+      contentType: 'application/json; charset=utf-8',
+	  success: function(result) {
+        plot1(result)
+	  },
+	  error: function(result) {
+		$("#error").html(result);
+	  }
+	});
+}
+function callme2(a){
+    $.ajax({
+	  type: 'GET',
+	  url: a,
+      contentType: 'application/json; charset=utf-8',
+	  headers: {
+	  },
+	  success: function(result) {
+        plot2(result)
+	  },
+	  error: function(result) {
+		$("#error").html(result);
+	  }
+	});
+}
+
+
+
+function callme3(a){
+    $.ajax({
+	  type: 'GET',
+	  url: a,
+      contentType: 'application/json; charset=utf-8',
+	  success: function(result) {
+        scattrplot(result)
+	  },
+	  error: function(result) {
+		$("#error").html(result);
+	  }
+	});
+}
+</script>
+
+<div class="row" >
+
+    <div class="dropdown2">
+            <button onclick="callme(id)" id="/screeR">screeplot</button>
+            <button onclick="callme(id)" id="/screeA">screeplot(A)</button>
+            <button onclick="callme1(id)" id="/square">PCAloading(R)</button>
+            <button onclick="callme1(id)" id="/squaresample">PCAloading(A)</button>
+            <button onclick="callme2(id)" id="/scatterrandom">PCA Scatter(R)</button>
+            <button onclick="callme2(id)" id="/randomsample1">PCA Scatter(A)</button>
+            <button onclick="callme2(id)" id="/mdseuclR">MDS eucli(R)</button>
+            <button onclick="callme2(id)" id="/mdseuclA">MDS eucli(A)</button>
+            <button onclick="callme2(id)" id="/mdscorrR">MDS correl (R)</button>
+            <button onclick="callme2(id)" id="/mdscorrA">MDS correl (A)</button>
+            <button onclick="callme3(id)" id="/scattermatrixR">Scatterplot matrix(R)</button>
+            <button onclick="callme3(id)" id="/scattermatrixA">Scatterplot matrix(A)</button>
+           
+       </select>
+    </div>
+</div>
+
+</hr>
+</body>
+</html>
